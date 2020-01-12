@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="nginx,反向代理," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="nginx同端口多目录层级部署准备工作系统环境 64位CentOS 7.2 64位JDK 1.8  工具 tomcat服务器，版本：7.0.69    nginx服务器，版本：1.12.0">
+<meta name="keywords" content="nginx,反向代理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nginx同端口多目录层级部署">
+<meta property="og:url" content="http://yoursite.com/2018/01/14/Nginx合并部署/index.html">
+<meta property="og:site_name" content="小易博文">
+<meta property="og:description" content="nginx同端口多目录层级部署准备工作系统环境 64位CentOS 7.2 64位JDK 1.8  工具 tomcat服务器，版本：7.0.69    nginx服务器，版本：1.12.0">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-01-12T15:47:26.271Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nginx同端口多目录层级部署">
+<meta name="twitter:description" content="nginx同端口多目录层级部署准备工作系统环境 64位CentOS 7.2 64位JDK 1.8  工具 tomcat服务器，版本：7.0.69    nginx服务器，版本：1.12.0">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/01/14/Nginx合并部署/"/>
+
+
+
+
+
+  <title>nginx同端口多目录层级部署 | 小易博文</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小易博文</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">最痛苦的事，不是失败，是我本可以!</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/14/Nginx合并部署/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="小易">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小易博文">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">nginx同端口多目录层级部署</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-14T00:00:00+08:00">
+                2018-01-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="nginx同端口多目录层级部署"><a href="#nginx同端口多目录层级部署" class="headerlink" title="nginx同端口多目录层级部署"></a>nginx同端口多目录层级部署</h1><h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><h3 id="系统环境"><a href="#系统环境" class="headerlink" title="系统环境"></a>系统环境</h3><ul>
+<li>64位CentOS 7.2</li>
+<li>64位JDK 1.8</li>
+</ul>
+<h3 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h3><ul>
+<li>tomcat服务器，版本：7.0.69   </li>
+<li>nginx服务器，版本：1.12.0</li>
+</ul>
+<a id="more"></a>
+<h3 id="后端环境"><a href="#后端环境" class="headerlink" title="后端环境"></a>后端环境</h3><p>后端需要准备好的包括    </p>
+<ul>
+<li>合理用药系统服务，知识管理平台系统服务，用户中心服务     </li>
+<li>med.war，knowledgecenter.war，systemcenter.war</li>
+</ul>
+<h3 id="前端环境"><a href="#前端环境" class="headerlink" title="前端环境"></a>前端环境</h3><p>前端需要准备好的包括    </p>
+<ul>
+<li>homecenter，knowledgecenter以及systemcenter前端包</li>
+</ul>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><h3 id="后端"><a href="#后端" class="headerlink" title="后端"></a>后端</h3><ol>
+<li>启动各个系统的服务（包括tomcat中的setenv.sh文件详情见3.4系统部署文档）</li>
+<li>将med.war，knowledgecenter.war以及systemcenter.war放到/mnt/yyspace/soft/tomcat（包名以及路径可自定义）/webapps 目录下</li>
+<li>进入到/mnt/yyspace/soft/tomcat（包名以及路径可自定义）/bin目录下，执行./startup.sh 命令</li>
+</ol>
+<h3 id="前端"><a href="#前端" class="headerlink" title="前端"></a>前端</h3><ol>
+<li>将前端包放到/mnt/yyspace/onestep目录下（包名以及路径可自定义）</li>
+<li>进入到/mnt/yyspace/soft/nginx-1.12.0（包名以及路径可自定义）/sbin目录下，执行./nginx 命令</li>
+</ol>
+<h1 id="Nginx配置详解"><a href="#Nginx配置详解" class="headerlink" title="Nginx配置详解"></a>Nginx配置详解</h1><h2 id="Ngixn默认配置文件"><a href="#Ngixn默认配置文件" class="headerlink" title="Ngixn默认配置文件"></a>Ngixn默认配置文件</h2><p><strong>部分注释块已删除</strong></p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#user  nobody;</span></span><br><span class="line"><span class="attribute">worker_processes</span>  <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">#error_log  logs/error.log;</span></span><br><span class="line"><span class="comment">#error_log  logs/error.log  notice;</span></span><br><span class="line"><span class="comment">#error_log  logs/error.log  info;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#pid        logs/nginx.pid;</span></span><br><span class="line"></span><br><span class="line"><span class="section">events</span> &#123;</span><br><span class="line">    <span class="attribute">worker_connections</span>  <span class="number">1024</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="section">http</span> &#123;</span><br><span class="line">    <span class="attribute">include</span>       mime.types;</span><br><span class="line">    <span class="attribute">default_type</span>  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    <span class="comment">#log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '</span></span><br><span class="line">    <span class="comment">#                  '$status $body_bytes_sent "$http_referer" '</span></span><br><span class="line">    <span class="comment">#                  '"$http_user_agent" "$http_x_forwarded_for"';</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#access_log  logs/access.log  main;</span></span><br><span class="line"></span><br><span class="line">    <span class="attribute">sendfile</span>        <span class="literal">on</span>;</span><br><span class="line">    <span class="comment">#tcp_nopush     on;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#keepalive_timeout  0;</span></span><br><span class="line">    <span class="attribute">keepalive_timeout</span>  <span class="number">65</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">#gzip  on;</span></span><br><span class="line"></span><br><span class="line">    <span class="section">server</span> &#123;</span><br><span class="line">        <span class="attribute">listen</span>       <span class="number">80</span>;</span><br><span class="line">        <span class="attribute">server_name</span>  localhost;</span><br><span class="line"></span><br><span class="line">        <span class="comment">#charset koi8-r;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">#access_log  logs/host.access.log  main;</span></span><br><span class="line"></span><br><span class="line">        <span class="attribute">location</span> / &#123;</span><br><span class="line">            <span class="attribute">root</span>   html;</span><br><span class="line">            <span class="attribute">index</span>  index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="attribute">error_page</span>   <span class="number">500</span> <span class="number">502</span> <span class="number">503</span> <span class="number">504</span>  /50x.html;</span><br><span class="line">        <span class="attribute">location</span> = /50x.html &#123;</span><br><span class="line">            <span class="attribute">root</span>   html;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="统一部署Nginx配置文件"><a href="#统一部署Nginx配置文件" class="headerlink" title="统一部署Nginx配置文件"></a>统一部署Nginx配置文件</h2><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#user  nobody;</span></span><br><span class="line"><span class="attribute">worker_processes</span>  <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">#error_log  logs/error.log;</span></span><br><span class="line"><span class="comment">#error_log  logs/error.log  notice;</span></span><br><span class="line"><span class="comment">#error_log  logs/error.log  info;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#pid        logs/nginx.pid;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="section">events</span> &#123;</span><br><span class="line">    <span class="attribute">worker_connections</span>  <span class="number">1024</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="section">http</span> &#123;</span><br><span class="line">    <span class="attribute">include</span>       mime.types;</span><br><span class="line">    <span class="attribute">default_type</span>  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    <span class="comment">#log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '</span></span><br><span class="line">    <span class="comment">#                  '$status $body_bytes_sent "$http_referer" '</span></span><br><span class="line">    <span class="comment">#                  '"$http_user_agent" "$http_x_forwarded_for"';</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#access_log  logs/access.log  main;</span></span><br><span class="line"></span><br><span class="line">    <span class="attribute">sendfile</span>        <span class="literal">on</span>;</span><br><span class="line">    <span class="comment">#tcp_nopush     on;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#keepalive_timeout  0;</span></span><br><span class="line">    <span class="attribute">keepalive_timeout</span>  <span class="number">65</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">#gzip  on;</span></span><br><span class="line"></span><br><span class="line">    <span class="section">server</span> &#123;</span><br><span class="line">        <span class="attribute">listen</span>       <span class="number">80</span>;</span><br><span class="line">        <span class="attribute">server_name</span>  localhost;</span><br><span class="line"></span><br><span class="line">        <span class="comment">#charset koi8-r;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">#access_log  logs/host.access.log  main;</span></span><br><span class="line"></span><br><span class="line">        <span class="attribute">location</span> / &#123;</span><br><span class="line">            <span class="attribute">root</span>   html;</span><br><span class="line">            <span class="attribute">index</span>  index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="attribute">error_page</span>   <span class="number">500</span> <span class="number">502</span> <span class="number">503</span> <span class="number">504</span>  /50x.html;</span><br><span class="line">        <span class="attribute">location</span> = /50x.html &#123;</span><br><span class="line">            <span class="attribute">root</span>   html;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="section">server</span> &#123;</span><br><span class="line">		<span class="attribute">listen</span>       <span class="number">9999</span>;</span><br><span class="line">		<span class="attribute">server_name</span>  Merger-deployment;</span><br><span class="line">		<span class="comment">#charset koi8-r;</span></span><br><span class="line">		<span class="attribute">location</span> /systemcenter/ &#123;</span><br><span class="line">			<span class="attribute">root</span> /mnt/yyspace/onestep;</span><br><span class="line">            <span class="attribute">rewrite</span><span class="regexp"> ^/system-center/(?:login|management|system_management|data_management|drug_management|rule_management|rule-management|guest_management|knowledge_sharing|dictionary_management|dict-management|mxgraph)+(/.*)?$/systemcenter/index.html</span>;</span><br><span class="line">		&#125;</span><br><span class="line">				</span><br><span class="line">		<span class="attribute">location</span> /knowledgecenter/ &#123;</span><br><span class="line">			<span class="attribute">root</span> /mnt/yyspace/onestep;</span><br><span class="line">	        <span class="attribute">rewrite</span><span class="regexp"> ^/knowledgecenter/(?:home|system_management|data-management|product-management|drug_management|rule_management|rule-management|guest_management|knowledge_sharing|dictionary_management|dict-management|mxgraph)+(/.*)$/knowledgecenter/index.html</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="attribute">location</span> /system/knowledge/ &#123;</span><br><span class="line">			<span class="attribute">proxy_pass</span> http://10.1.2.136:8080/knowledgecenter/api/v1/;</span><br><span class="line">			<span class="attribute">proxy_set_header</span> Cookie <span class="variable">$http_cookie</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="attribute">location</span> /system/ &#123;</span><br><span class="line">			<span class="attribute">proxy_pass</span> http://10.1.2.136:8080/systemcenter/;</span><br><span class="line">			<span class="attribute">proxy_set_header</span> Cookie <span class="variable">$http_cookie</span>;</span><br><span class="line">		&#125;</span><br><span class="line">				</span><br><span class="line">		<span class="attribute">location</span> /api/v1/ &#123;</span><br><span class="line">			<span class="attribute">proxy_pass</span> http://10.1.2.136:8080/knowledgecenter/api/v1;</span><br><span class="line">			<span class="attribute">proxy_set_header</span> Cookie <span class="variable">$http_cookie</span>;</span><br><span class="line">		&#125;</span><br><span class="line">				</span><br><span class="line">		<span class="attribute">location</span> /med/&#123;</span><br><span class="line">			<span class="attribute">proxy_pass</span> http://10.1.2.136:8080/med/;</span><br><span class="line">			<span class="attribute">proxy_set_header</span> Cookie <span class="variable">$http_cookie</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="attribute">location</span> / &#123;</span><br><span class="line">			<span class="attribute">root</span> /mnt/yyspace/onestep/homecenter;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="资源包路径定位"><a href="#资源包路径定位" class="headerlink" title="资源包路径定位"></a>资源包路径定位</h3><h4 id="用户中心"><a href="#用户中心" class="headerlink" title="用户中心"></a>用户中心</h4><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">location</span> /systemcenter/ &#123;</span><br><span class="line">	<span class="attribute">root</span> /mnt/yyspace/onestep;</span><br><span class="line">    <span class="attribute">rewrite</span><span class="regexp"> ^/system-center/(?:login|management|system_management|data_management|drug_management|rule_management|rule-management|guest_management|knowledge_sharing|dictionary_management|dict-management|mxgraph)+(/.*)?$/system-center/index.html</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>其中，root定位到/mnt/yyspace/onestep即可，会根据location</strong> <strong>/systemcenter/定位到用户中心的资源包</strong></p>
+<h4 id="知识管理平台"><a href="#知识管理平台" class="headerlink" title="知识管理平台"></a>知识管理平台</h4><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">location</span> /knowledgecenter/ &#123;</span><br><span class="line">	<span class="attribute">root</span> /mnt/yyspace/onestep;</span><br><span class="line">    <span class="attribute">rewrite</span><span class="regexp"> ^/knowledgecenter/(?:home|system_management|data-management|product-management|drug_management|rule_management|rule-management|guest_management|knowledge_sharing|dictionary_management|dict-management|mxgraph)+(/.*)$</span>  /knowledgecenter/index.html;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="统一登录页"><a href="#统一登录页" class="headerlink" title="统一登录页"></a>统一登录页</h4><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">location</span> / &#123;</span><br><span class="line">    <span class="attribute">root</span> /mnt/yyspace/onestep/homecenter;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>因为统一登录页默认9999端口访问，所以需要定位到精确的文件夹</strong></p>
+<h3 id="rewirte说明"><a href="#rewirte说明" class="headerlink" title="rewirte说明"></a>rewirte说明</h3><p>在用户中心以及知识管理平台的root新增了rewrite，因为路由是以“/”来对模块进行区分，加载页面，为了防止手输地址，以及刷新，造成服务器无法访问（浏览器会默认去文件夹下加载资源），将路由重新写到对应的包下面的index.html中，走路由，保证前端能在刷新以及手输地址的情况下能正常访问。</p>
+<h3 id="反向代理说明"><a href="#反向代理说明" class="headerlink" title="反向代理说明"></a>反向代理说明</h3><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">location</span> /system/ &#123;</span><br><span class="line">    <span class="attribute">proxy_pass</span> http://10.1.2.136:8080/systemcenter/;</span><br><span class="line">    <span class="attribute">proxy_set_header</span> Cookie <span class="variable">$http_cookie</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="attribute">location</span> /system/knowledge/ &#123;</span><br><span class="line">    <span class="attribute">proxy_pass</span> http://10.1.2.136:8080/knowledgecenter/api/v1/;</span><br><span class="line">    <span class="attribute">proxy_set_header</span> Cookie <span class="variable">$http_cookie</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="attribute">location</span> /api/v1/ &#123;</span><br><span class="line">    <span class="attribute">proxy_pass</span> http://10.1.2.136:8080/knowledgecenter/api/v1/;</span><br><span class="line">    <span class="attribute">proxy_set_header</span> Cookie <span class="variable">$http_cookie</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="attribute">location</span> /med/&#123;</span><br><span class="line">    <span class="attribute">proxy_pass</span> http://10.1.2.136:8080/med/;</span><br><span class="line">    <span class="attribute">proxy_set_header</span> Cookie <span class="variable">$http_cookie</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>location /system/</strong>:对于包含/system/前缀的接口，转发到<br>proxy_pass <a href="http://10.1.2.136:8080/systemcenter/下" target="_blank" rel="noopener">http://10.1.2.136:8080/systemcenter/下</a><br><strong>注意</strong>：在有目录层级情况下，proxy_pass 末尾“/”带上，转发之后的url不带system，<br>以<a href="http://10.1.2.136:9999/system/current" target="_blank" rel="noopener">http://10.1.2.136:9999/system/current</a> 为例，会被转发至真实接口<br><a href="http://10.1.2.136:8080/systemcenter/current" target="_blank" rel="noopener">http://10.1.2.136:8080/systemcenter/current</a> 。<br>如果proxy_pass 末尾不带上“/”，以<a href="http://10.1.2.136:9999/system/current" target="_blank" rel="noopener">http://10.1.2.136:9999/system/current</a> 为例，会被转发至真实接口<a href="http://10.1.2.136:8080/systemcentersystem/current，引发错误" target="_blank" rel="noopener">http://10.1.2.136:8080/systemcentersystem/current，引发错误</a></p>
+<p><strong>location /api/v1/</strong>:对于包含/ api/v1/前缀的接口，转发到<br>proxy_pass <a href="http://10.1.2.136:8080/knowledgecenter/api/v1/下" target="_blank" rel="noopener">http://10.1.2.136:8080/knowledgecenter/api/v1/下</a></p>
+<p><strong>location /med/</strong>:对于包含/ med/前缀的接口，转发到<br>proxy_pass <a href="http://10.1.2.136:8080/med/下" target="_blank" rel="noopener">http://10.1.2.136:8080/med/下</a></p>
+<p><strong>location /system/knowledge/</strong>:对于包含 /system/knowledge/ 前缀的接口，转发到proxy_pass <a href="http://10.1.2.136:8080/knowledgecenter/api/v1/下" target="_blank" rel="noopener">http://10.1.2.136:8080/knowledgecenter/api/v1/下</a></p>
+<h3 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h3><ol>
+<li>因为知识管理平台架构比较老，没有对url做提取，所以无法对url加统一前缀，/api/v1/这个标识需要给到知识管理平台</li>
+<li><p>对于用户中心以及统一登录页，对url进行了提取，放到json文件里，可以统一加上前缀（前缀与接口匹配规则对应，例如location /system/）。<br>用户中心是url.json文件，统一登录也是urlFile.json，在host后面加上前缀<br>例如下图：</p>
+</li>
+<li><p>针对于用户中心对于调用知识管理平台的接口，有knowledge前缀，所以还需要对/system/knowledge/ 标识进行转发，转发到知识管理平台后端。</p>
+</li>
+<li>针对于404 报错问题，首先排查，rewrite 的报名以及location的包名是否正确，第二步排查路由是否被rewrite正确重写，如果rewirte里面不包含路由，就添加</li>
+<li>修改nginx.conf文件之后，必须执行./nginx –s reload命令</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/nginx/" rel="tag"># nginx</a>
+          
+            <a href="/tags/反向代理/" rel="tag"># 反向代理</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/01/hello-world/" rel="next" title="Hello World">
+                <i class="fa fa-chevron-left"></i> Hello World
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/17/mybatis-generator工具说明/" rel="prev" title="mybatis-generator 工具说明">
+                mybatis-generator 工具说明 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">小易</p>
+              <p class="site-description motion-element" itemprop="description">逆流而上，不进则退</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/EagleGZG/" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="1623822618@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#nginx同端口多目录层级部署"><span class="nav-number">1.</span> <span class="nav-text">nginx同端口多目录层级部署</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#准备工作"><span class="nav-number">1.1.</span> <span class="nav-text">准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#系统环境"><span class="nav-number">1.1.1.</span> <span class="nav-text">系统环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#工具"><span class="nav-number">1.1.2.</span> <span class="nav-text">工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#后端环境"><span class="nav-number">1.1.3.</span> <span class="nav-text">后端环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#前端环境"><span class="nav-number">1.1.4.</span> <span class="nav-text">前端环境</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#部署"><span class="nav-number">1.2.</span> <span class="nav-text">部署</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#后端"><span class="nav-number">1.2.1.</span> <span class="nav-text">后端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#前端"><span class="nav-number">1.2.2.</span> <span class="nav-text">前端</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Nginx配置详解"><span class="nav-number">2.</span> <span class="nav-text">Nginx配置详解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Ngixn默认配置文件"><span class="nav-number">2.1.</span> <span class="nav-text">Ngixn默认配置文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#统一部署Nginx配置文件"><span class="nav-number">2.2.</span> <span class="nav-text">统一部署Nginx配置文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#资源包路径定位"><span class="nav-number">2.2.1.</span> <span class="nav-text">资源包路径定位</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#用户中心"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">用户中心</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#知识管理平台"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">知识管理平台</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#统一登录页"><span class="nav-number">2.2.1.3.</span> <span class="nav-text">统一登录页</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rewirte说明"><span class="nav-number">2.2.2.</span> <span class="nav-text">rewirte说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反向代理说明"><span class="nav-number">2.2.3.</span> <span class="nav-text">反向代理说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#注意点"><span class="nav-number">2.2.4.</span> <span class="nav-text">注意点</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">小易</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

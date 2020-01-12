@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Spring," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="参考https://www.cnblogs.com/ssslinppp/p/7606038.html 背景由于项目中，存在着各式各样的异常，不同的异常会有不同的报错信息。如果直接返回给前端，一个是异常状态吗的不一致，前端难以进行统一处理，另一个是信息是未经过处理的，会导致用户内心很懵逼（咋回事？又出了啥问题？）所以需要对异常进行包装，进行统一异常处理。">
+<meta name="keywords" content="Spring">
+<meta property="og:type" content="article">
+<meta property="og:title" content="统一异常处理">
+<meta property="og:url" content="http://yoursite.com/2019/07/13/统一异常处理/index.html">
+<meta property="og:site_name" content="小易博文">
+<meta property="og:description" content="参考https://www.cnblogs.com/ssslinppp/p/7606038.html 背景由于项目中，存在着各式各样的异常，不同的异常会有不同的报错信息。如果直接返回给前端，一个是异常状态吗的不一致，前端难以进行统一处理，另一个是信息是未经过处理的，会导致用户内心很懵逼（咋回事？又出了啥问题？）所以需要对异常进行包装，进行统一异常处理。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-01-12T15:47:26.274Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="统一异常处理">
+<meta name="twitter:description" content="参考https://www.cnblogs.com/ssslinppp/p/7606038.html 背景由于项目中，存在着各式各样的异常，不同的异常会有不同的报错信息。如果直接返回给前端，一个是异常状态吗的不一致，前端难以进行统一处理，另一个是信息是未经过处理的，会导致用户内心很懵逼（咋回事？又出了啥问题？）所以需要对异常进行包装，进行统一异常处理。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/07/13/统一异常处理/"/>
+
+
+
+
+
+  <title>统一异常处理 | 小易博文</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小易博文</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">最痛苦的事，不是失败，是我本可以!</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/13/统一异常处理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="小易">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小易博文">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">统一异常处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-13T00:00:00+08:00">
+                2019-07-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>参考<br><a href="https://www.cnblogs.com/ssslinppp/p/7606038.html" target="_blank" rel="noopener">https://www.cnblogs.com/ssslinppp/p/7606038.html</a></p>
+<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>由于项目中，存在着各式各样的异常，不同的异常会有不同的报错信息。如果直接返回给前端，一个是异常状态吗的不一致，前端难以进行统一处理，另一个是信息是未经过处理的，会导致用户内心很懵逼（咋回事？又出了啥问题？）所以需要对异常进行包装，进行统一异常处理。</p>
+<a id="more"></a>
+<h1 id="技术实现"><a href="#技术实现" class="headerlink" title="技术实现"></a>技术实现</h1><h2 id="使用-ControllerAdvice-和-ExceptionHandler"><a href="#使用-ControllerAdvice-和-ExceptionHandler" class="headerlink" title="使用@ControllerAdvice 和 @ExceptionHandler"></a>使用@ControllerAdvice 和 @ExceptionHandler</h2><ol>
+<li>@ExceptionHandler：统一处理某一类异常，从而能够减少代码重复率和复杂度</li>
+<li>@ControllerAdvice注解：控制器增强，一个被@Component注册的组件。<br>配合@ExceptionHandler来增强所有的@requestMapping方法。</li>
+<li>@ResponseStatus：可以将某种异常映射为HTTP状态码</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExceptionController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Component</span></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomizationBean</span> <span class="keyword">implements</span> <span class="title">EmbeddedServletContainerCustomizer</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">customize</span><span class="params">(ConfigurableEmbeddedServletContainer container)</span> </span>&#123;</span><br><span class="line">            container.addErrorPages(<span class="keyword">new</span> ErrorPage(HttpStatus.BAD_REQUEST, <span class="string">"/error/400"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(value=<span class="string">"/error/400"</span>)</span><br><span class="line">    <span class="function">RestResult <span class="title">error400</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> RestResult&lt;&gt;(ResultCode.UNKNOW_ERROR);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// 注意:</span></span><br><span class="line">    <span class="comment">/// 以下 exceptionHandler 顺序请不要修改</span></span><br><span class="line">    <span class="comment">/// 业务异常, 将错误码和消息抛出去, 其他异常全部返回内部错误</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 请求方式不一致异常</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ex</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = HttpRequestMethodNotSupportedException.class)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> RestResult <span class="title">handleHttpRequestMethodNotSupportException</span><span class="params">(HttpRequestMethodNotSupportedException ex)</span></span>&#123;</span><br><span class="line">        log.warn(ex.getMessage(), ex);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ResultCode.INVALID_REQARG, <span class="string">"不支持的request method:"</span>+ ex.getMethod());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 无法执行解决方案，例如用户名长度不合法</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ex</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = ConstraintViolationException.class)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> RestResult <span class="title">ConstraintViolationExceptionErrorHandler</span><span class="params">(ConstraintViolationException ex)</span></span>&#123;</span><br><span class="line">        Set&lt;ConstraintViolation&lt;?&gt;&gt; constraintViolations = ex.getConstraintViolations();</span><br><span class="line">        Iterator&lt;ConstraintViolation&lt;?&gt;&gt; iterator = constraintViolations.iterator();</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ResultCode.INVALID_REQARG, <span class="string">"参数"</span>+iterator.next().getMessageTemplate());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 绑定错误异常</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ex</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = BindException.class)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> RestResult <span class="title">bindExceptionErrorHandler</span><span class="params">(BindException ex)</span></span>&#123;</span><br><span class="line">        List&lt;FieldError&gt; fieldErrors=ex.getBindingResult().getFieldErrors();</span><br><span class="line">        String errorField=fieldErrors.get(<span class="number">0</span>).getField();</span><br><span class="line">        String errorMsg=fieldErrors.get(<span class="number">0</span>).getDefaultMessage();</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ResultCode.INVALID_REQARG, <span class="string">"参数"</span>+errorField+<span class="string">"传入错误:"</span>+errorMsg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 参数缺失异常</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ex</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(MissingServletRequestParameterException.class)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> RestResult <span class="title">handleMissingParams</span><span class="params">(MissingServletRequestParameterException ex)</span> </span>&#123;</span><br><span class="line">        String name = ex.getParameterName();</span><br><span class="line">        log.error(ex.getMessage(), ex);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ResultCode.INVALID_REQARG, <span class="string">"缺失参数"</span> + name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 参数类型错误异常</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ex</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(MethodArgumentTypeMismatchException.class)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> RestResult <span class="title">handleMismatchParams</span><span class="params">(MethodArgumentTypeMismatchException ex)</span> </span>&#123;</span><br><span class="line">        log.warn(ex.getMessage(), ex);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ResultCode.INVALID_REQARG, <span class="string">"参数类型有误"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = &#123;FlowableException.class&#125;)</span><br><span class="line">    <span class="function">RestResult <span class="title">flowableExceptionHandler</span><span class="params">(FlowableException ex)</span> </span>&#123;</span><br><span class="line">        log.error(ex.getMessage(), ex);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ex);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = &#123;XiaolvBizValidException.class&#125;)</span><br><span class="line">    <span class="function">RestResult <span class="title">bizExceptionHandler</span><span class="params">(XiaolvBizValidException ex)</span> </span>&#123;</span><br><span class="line">        log.warn(ex.getMessage(), ex);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ex);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = &#123;XiaolvConditionValidException.class&#125;)</span><br><span class="line">    <span class="function">RestResult <span class="title">conditionExceptionHandler</span><span class="params">(XiaolvConditionValidException ex)</span> </span>&#123;</span><br><span class="line">        log.warn(ex.getMessage(), ex);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ex);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = &#123;XiaolvException.class&#125;)</span><br><span class="line">    <span class="function">RestResult <span class="title">xiaolvExceptionHandler</span><span class="params">(XiaolvException ex)</span> </span>&#123;</span><br><span class="line">        log.warn(ex.getMessage(), ex);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ex);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * io异常</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ex</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = &#123;IOException.class, SocketTimeoutException.class&#125;)</span><br><span class="line">    <span class="function">RestResult <span class="title">ioExceptionHandler</span><span class="params">(IOException ex)</span> </span>&#123;</span><br><span class="line">        log.warn(ex.getMessage(), ex);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ex);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 参数非法异常</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ex</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = &#123; IllegalArgumentException.class &#125;)</span><br><span class="line">    <span class="function">RestResult <span class="title">illegalArgumentExceptionHandler</span><span class="params">(IllegalArgumentException ex)</span> </span>&#123;</span><br><span class="line">        log.error(ex.getMessage(), ex);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ex);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 空指针异常</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ex</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = &#123;NullPointerException.class&#125;)</span><br><span class="line">    <span class="function">RestResult <span class="title">npeExceptionHandler</span><span class="params">(NullPointerException ex)</span> </span>&#123;</span><br><span class="line">        log.error(ex.getMessage(), ex);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ResultCode.NPE_ERROR);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 运行时异常</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> t</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = &#123;RuntimeException.class&#125;)</span><br><span class="line">    <span class="function">RestResult <span class="title">runtimeExceptionHandler</span><span class="params">(RuntimeException t)</span> </span>&#123;</span><br><span class="line">        log.error(t.getMessage(), t);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(t);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 未知异常</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> t</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(value = &#123;Throwable.class&#125;)</span><br><span class="line">    <span class="function">RestResult <span class="title">internalExceptionHandler</span><span class="params">(Throwable t)</span> </span>&#123;</span><br><span class="line">        log.error(t.getMessage(), t);</span><br><span class="line">        <span class="keyword">return</span> $.retFalse(ResultCode.UNKNOW_ERROR);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><b>注意：</b><br>进入Controller层的错误才会由@ControllerAdvice处理，拦截器抛出的错误以及访问错误地址的情况@ControllerAdvice处理不了，由SpringBoot默认的异常处理机制处理。</p>
+<h2 id="Spring-AOP-实现方式"><a href="#Spring-AOP-实现方式" class="headerlink" title="Spring AOP 实现方式"></a>Spring AOP 实现方式</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">@Aspect</span><br><span class="line">public class ControllerAspect &#123;</span><br><span class="line">    public static final Logger logger = LoggerFactory.getLogger(ControllerAspect.class);</span><br><span class="line"></span><br><span class="line">    @Around(&quot;execution(public com.ssslinppp.model.ResultEntity com..*.controller..*.*(..))&quot;)</span><br><span class="line">    public Object handleControllerMethod(ProceedingJoinPoint pjp) &#123;</span><br><span class="line">        Stopwatch stopwatch = Stopwatch.createStarted();</span><br><span class="line"></span><br><span class="line">        ResultEntity&lt;?&gt; resultEntity;</span><br><span class="line">        try &#123;</span><br><span class="line">            logger.info(&quot;执行Controller开始: &quot; + pjp.getSignature() + &quot; 参数：&quot; + Lists.newArrayList(pjp.getArgs()).toString());</span><br><span class="line">            resultEntity = (ResultEntity&lt;?&gt;) pjp.proceed(pjp.getArgs());</span><br><span class="line">            logger.info(&quot;执行Controller结束: &quot; + pjp.getSignature() + &quot;， 返回值：&quot; + resultEntity.toString());</span><br><span class="line">            logger.info(&quot;耗时：&quot; + stopwatch.stop().elapsed(TimeUnit.MILLISECONDS) + &quot;(毫秒).&quot;);</span><br><span class="line">        &#125; catch (Throwable throwable) &#123;</span><br><span class="line">            resultEntity = handlerException(pjp, throwable);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        return resultEntity;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private ResultEntity&lt;?&gt; handlerException(ProceedingJoinPoint pjp, Throwable e) &#123;</span><br><span class="line">        ResultEntity&lt;?&gt; resultEntity = null;</span><br><span class="line">        if (e instanceof RuntimeException) &#123;</span><br><span class="line">            logger.error(&quot;RuntimeException&#123;方法：&quot; + pjp.getSignature() + &quot;， 参数：&quot; + pjp.getArgs() + &quot;,异常：&quot; + e.getMessage() + &quot;&#125;&quot;, e);</span><br><span class="line">            resultEntity = ResultEntity.fail(e.getMessage());</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            logger.error(&quot;异常&#123;方法：&quot; + pjp.getSignature() + &quot;， 参数：&quot; + pjp.getArgs() + &quot;,异常：&quot; + e.getMessage() + &quot;&#125;&quot;, e);</span><br><span class="line">            resultEntity = ResultEntity.fail(e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        return resultEntity;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><b>表达式</b><br>@Around(“execution(public com.ssslinppp.model.ResultEntity com…controller…*(..))”)</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Spring/" rel="tag"># Spring</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/07/Java SPI解读/" rel="next" title="Java SPI解读">
+                <i class="fa fa-chevron-left"></i> Java SPI解读
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">小易</p>
+              <p class="site-description motion-element" itemprop="description">逆流而上，不进则退</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/EagleGZG/" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="1623822618@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#技术实现"><span class="nav-number">2.</span> <span class="nav-text">技术实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用-ControllerAdvice-和-ExceptionHandler"><span class="nav-number">2.1.</span> <span class="nav-text">使用@ControllerAdvice 和 @ExceptionHandler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-AOP-实现方式"><span class="nav-number">2.2.</span> <span class="nav-text">Spring AOP 实现方式</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">小易</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
